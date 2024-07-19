@@ -6,7 +6,7 @@ import requests
 import sys
 import os
 
-def SFP(date:str ,length:int = 30,freqs = ["410MHz","610MHz","1415MHz","2695MHz"], mode:str = "all",method:str="sqrt",poww=1/2):
+def SFP(date:str ,length:int = 30,freqs = ["410MHz","610MHz","1415MHz","2695MHz"], mode:str = "all",method:str="norm",poww=1/2):
     length+=1
     sform = "%y%m%d"
     fcols = ["from 410MHz","from 610MHz","from 1415MHz","from 2695MHz"]
