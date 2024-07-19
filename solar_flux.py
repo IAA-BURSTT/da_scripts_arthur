@@ -10,6 +10,10 @@ def SFP(date:str ,length:int = 30,freqs = ["410MHz","610MHz","1415MHz","2695MHz"
     length+=1
     sform = "%y%m%d"
     fcols = ["from 410MHz","from 610MHz","from 1415MHz","from 2695MHz"]
+    
+    if mode == "none":
+        return SFQ(date,freqs,sform=sform).iloc[0]
+    
     for date_i in pd.date_range(end=(pd.to_datetime(date, format=sform)), periods=length).strftime(sform):
         df = SFQ(date_i,freqs,sform=sform)
         try: 
@@ -37,7 +41,7 @@ def SFP(date:str ,length:int = 30,freqs = ["410MHz","610MHz","1415MHz","2695MHz"
     tb.columns = freqs
     tb = pd.concat([sf.tail(1),tb])
     op0, op1, op2 = tb, er, st
-    op0 = op0.astype(int)
+    op0 = op0.astype(int).astype(float)
     op1 = op1.map('{:.2f}%'.format)
     op2 = op2.map('{:.2f}%'.format)
     del tb, er, st
