@@ -13,7 +13,7 @@ from util_func import blsubplots
 import gc, time
 
 ######
-import rfiremoval
+from rfiremoval import *
 remrfi = False
 ######
 
@@ -82,7 +82,7 @@ syntax:
     --meta bytes    # the ring buffer or file metadata length in bytes
     --p0 pack0      # specify the pack offset
                     # disable autop0
-    --blocklen blocklen
+    --blocklen packBlock
                     # specify the block length in packets
                     # (%d)
     --nB nBlock     # specify the length of the binary file in nBlock
@@ -96,6 +96,7 @@ syntax:
     -o output_file  # specify the output file name
                     # default: %s
     -v              # enable more message
+    --rfif rfifile  # Remove RFI
 
 ''' % (pg, nPack, hdver, packBlock, flim[0], flim[1], fout)
 
@@ -257,7 +258,7 @@ nFile = len(grpFiles[0])
 
 ###########################  RFI DATA  ###########################
 if remrfi:
-    rfi_norm1c, V1c0 = loadRFI(rfifile)
+    rfi_norm1c, V1c0 = loadRFI(rfifile, nBlock, packBlock,meta, pack0, nPack, order_off, verbose, bitwidth, hdver)
 ##################################################################
 
 t0 = time.time()
@@ -382,9 +383,9 @@ for fi in range(nFile):
         ########################### RFI Removal ###########################
         if remrfi:
             ################### Main ###################
-            rspec2, W2C, W2cr = remoRFI(tmpspec, rfi_norm1c, V1c0)
+            rspec2 = remoRFI(tmpspec, rfi_norm1c, V1c0, nChan, nAnt)
             ############### Check Results ###############
-            plotRFT(tmpspec, rspec2, nChan, W2C, W2cr)
+            plotRFI(tmpspec, rspec2, nChan ,nAnt, cdir, dt)
             #port values back
             tmpspec = rspec2
         ###################################################################
