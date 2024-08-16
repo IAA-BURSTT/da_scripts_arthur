@@ -255,7 +255,7 @@ nFile = len(grpFiles[0])
 
 ###########################  RFI DATA  ###########################
 if remrfi:
-    print(nBlock, packBlock,meta, pack0, nPack, order_off, verbose, bitwidth, hdver)
+    #print(nBlock, packBlock,meta, pack0, nPack, order_off, verbose, bitwidth, hdver)
     rfi_norm1c, V1c0 = loadRFI(rfifile, nBlock, packBlock,meta, pack0, nPack, order_off, verbose, bitwidth, hdver)
     #print(V1c0)
 ##################################################################
