@@ -1,6 +1,12 @@
-def loadRFI(rfifile):
+## defined in the (bursttda) env
+from loadh5 import *
+from packet_func import *
+from calibrate_func import *
+
+
+def loadRFI(rfifile, nBlock, blocklen,meta, pack0, nPack, order_off, verbose, bitwidth, hdver):
     with open(rfifile, 'rb') as fh:
-        BM = loadFullbitmap(fh, nBlock, blocklen=packBlock, meta=meta)
+        BM = loadFullbitmap(fh, nBlock, blocklen=blocklen, meta=meta)
         bitmap = BM[pack0:pack0+nPack]
         rfi_tick, rfi_spec1 = loadSpec(fh, pack0, nPack, order_off=order_off, bitmap=bitmap, 
                                        verbose=verbose, bitwidth=bitwidth, hdver=hdver, meta=meta, nBlock=nBlock)
@@ -15,7 +21,7 @@ def loadRFI(rfifile):
     return rfi_norm1c, V1c0
     
     
-def remoRFI(tmpspec, rfi_norm1c, V1c0):
+def remoRFI(tmpspec, rfi_norm1c, V1c0, nChan, nAnt):
     #normalization
     nspec2 = tmpspec/rfi_norm1c
     #nulling
@@ -24,9 +30,9 @@ def remoRFI(tmpspec, rfi_norm1c, V1c0):
         rspec2[:,:,ch] = nspec2[:,:,ch] - (np.tensordot(V1c0[ch].conjugate(), nspec2[:,:,ch], 
                                                         axes=(0,1)).reshape((-1,1))*V1c0[ch].reshape((1,nAnt)))
     
-    return rspec2, W2C, W2cr
+    return rspec2#, W2C, W2cr
     
-def plotRFI(tmpspec, rspec2, nChan, W2C, W2cr) -> None:
+def plotRFI(tmpspec, rspec2, nChan, nAnt, cdir, dt) -> None:
     #make covariance
     #before
     Cov2c, norm2c = makeCov(tmpspec.transpose((1,0,2)), coeff=True)
@@ -61,6 +67,32 @@ def plotRFI(tmpspec, rspec2, nChan, W2C, W2cr) -> None:
     ax.set_ylabel('eigenvalue (dB)')
     for i in range(nAnt):
         ax.plot(chan, 20*np.log10(W2cr[:,i]))
-    tag = 't%07d' % dt
-    fig.savefig('%s/rfirem_res_%s.png' % (cdir, tag))
-    plt.close(fig)
+        
+    if (isinstance(dt, str)) & (cdir == ""):
+        dt = dt[6:-4]
+        fig.savefig('rfirem_res_t%s.png' % (dt))
+    else:
+        tag = 't%07d' % dt
+        cdir = cdir + "/"
+        fig.savefig('%srfirem_res_%s.png' % (cdir, tag))
+        plt.close(fig)
+    
+    
+
+def main(nAnt, nChan, rfifname, dfile, nBlock, blocklen, meta, pack0, nPack, order_off, verbose, bitwidth, hdver, cdir):
+    chan = np.arange(nChan)
+    rfi_norm1c, V1c0 = loadRFI(rfifname, nBlock, blocklen, meta, pack0, nPack, order_off, verbose, bitwidth, hdver)
+    #bitmap = np.ones(nPack, dtype=bool)
+    with open(dfile, 'rb') as fh:
+        BM = loadFullbitmap(fh, nBlock, blocklen=blocklen, meta=meta)
+        bitmap = BM[pack0:pack0+nPack]
+        tick, tmpspec = loadSpec(fh, pack0, nPack, order_off=order_off, bitmap=bitmap, 
+                                 verbose=verbose, bitwidth=bitwidth, hdver=hdver, meta=meta, nBlock=nBlock)
+    rspec2 = remoRFI(tmpspec, rfi_norm1c, V1c0,nChan, nAnt)
+    cdir = ""
+    plotRFI(tmpspec, rspec2, nChan,nAnt, cdir, dfile)
+
+
+#if __name__ == "__main__":
+
+    
