@@ -6,10 +6,6 @@ from loadh5 import *
 from subprocess import call
 from glob import glob
 from astropy.time import Time
-from packet_func import *
-from calibrate_func import *
-from pyplanet import *
-from util_func import blsubplots
 import gc, time
 
 ######
@@ -82,7 +78,7 @@ syntax:
     --meta bytes    # the ring buffer or file metadata length in bytes
     --p0 pack0      # specify the pack offset
                     # disable autop0
-    --blocklen packBlock
+    --blocklen blocklen
                     # specify the block length in packets
                     # (%d)
     --nB nBlock     # specify the length of the binary file in nBlock
@@ -261,6 +257,9 @@ if remrfi:
     rfi_norm1c, V1c0 = loadRFI(rfifile, nBlock, packBlock,meta, pack0, nPack, order_off, verbose, bitwidth, hdver)
 ##################################################################
 
+
+
+
 t0 = time.time()
 
 for fi in range(nFile):
@@ -352,7 +351,7 @@ for fi in range(nFile):
 
     if (verbose):
         print('pack0:', p0)
-    
+
     antspec = np.ma.array(np.zeros((nPack//ppf, nInp, nChan), dtype=complex), mask=True)
     validGrp = True
     ai = -1
@@ -380,6 +379,7 @@ for fi in range(nFile):
         t2 = time.time()
         print('   %d packets loaded in %.2fsec'%(nPack, t2-t1))
         fh.close()
+        
         ########################### RFI Removal ###########################
         if remrfi:
             ################### Main ###################
@@ -389,13 +389,14 @@ for fi in range(nFile):
             #port values back
             tmpspec = rspec2
         ###################################################################
+        
         for idx in gidx:
             ai += 1
             if (verbose):
                 print(gi, dirs[gi], idx, '-->', ai)
             antspec[:,ai] = tmpspec[:,idx]
 
-        del tick,tmpspec
+        del tick, tmpspec
         gc.collect()
 
     if (validGrp):
