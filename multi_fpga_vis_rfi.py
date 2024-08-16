@@ -201,6 +201,7 @@ winDur = %.6f sec
 ''' % (nInp, nPack, fout, cdir, winDur)
 print(info)
 print('idx:', inpIdx)
+print(remrfi)
 
 
 attrs = {}
@@ -254,7 +255,9 @@ nFile = len(grpFiles[0])
 
 ###########################  RFI DATA  ###########################
 if remrfi:
+    print(nBlock, packBlock,meta, pack0, nPack, order_off, verbose, bitwidth, hdver)
     rfi_norm1c, V1c0 = loadRFI(rfifile, nBlock, packBlock,meta, pack0, nPack, order_off, verbose, bitwidth, hdver)
+    #print(V1c0)
 ##################################################################
 
 
@@ -379,11 +382,12 @@ for fi in range(nFile):
         t2 = time.time()
         print('   %d packets loaded in %.2fsec'%(nPack, t2-t1))
         fh.close()
-        
+        #print(tmpspec)
         ########################### RFI Removal ###########################
         if remrfi:
             ################### Main ###################
             rspec2 = remoRFI(tmpspec, rfi_norm1c, V1c0, nChan, nAnt)
+            #print(rspec2)
             ############### Check Results ###############
             plotRFI(tmpspec, rspec2, nChan ,nAnt, cdir, dt)
             #port values back
